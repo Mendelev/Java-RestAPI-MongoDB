@@ -1,5 +1,5 @@
 # Web Service REST java
->O projeto consiste em um web service desenvolvido com java e com persistencia de dados em MySql. Este web service recebe e envia dados em formato json podendo ser consumido por APPs de diversas plataformas e é um pequeno exemplo que apenas grava e retorna dados de clintes, mas que pode ser expendido e ganhar novas funcionalidades.</p>
+>O projeto de testes para experimentar o funcionamento da integração de Java com MongoDB.</p>
 
 #### Tecnologis/libs utilizadas:
 * Java
