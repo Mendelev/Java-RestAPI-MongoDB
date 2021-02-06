@@ -1,5 +1,7 @@
 package br.com.restful.model;
 
+import java.lang.reflect.Field;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -114,6 +116,31 @@ public final class Planet {
 			return false;
 		return true;
 	}
+	
+	//Check if any attribute of planet is Null
+	public boolean isNull() {
+        Field fields[] = this.getClass().getDeclaredFields();
+        for (Field f : fields) {
+            try {
+                Object value = f.get(this);
+                if (value == null) {
+                    return true;
+                }
+            }
+            catch (IllegalArgumentException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            catch (IllegalAccessException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+
+        }
+        return false;
+
+    }
 	
 	
 }

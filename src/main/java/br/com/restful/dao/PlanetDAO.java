@@ -192,6 +192,12 @@ import br.com.restful.model.Planet;
 		
 		boolean isSaved=false;
 		
+		//If any attribute is Null, the planet will note be inserted
+		if(planet.isNull()) {
+			System.out.println("There is at leats one attribute null, this planet will not be inserted");
+			return isSaved;
+		}
+		
 		try {
 			Document doc = new Document("_id", new ObjectId());
 			doc.append("id",id);
@@ -219,9 +225,15 @@ import br.com.restful.model.Planet;
 		String id = planet.getId();
 		String name = planet.getName();
 		String climate = planet.getClimate();
-		String terrain = planet.getTerrain();
+		String terrain = planet.getTerrain();	
+		
 		
 		boolean isUpdated = false;
+		//If any attribute is Null, the planet will note be inserted
+		if(planet.isNull()) {
+			System.out.println("There is at least one attribute null, this planet will not be udpated");
+			return isUpdated;
+		}
 		
 		try {
 			

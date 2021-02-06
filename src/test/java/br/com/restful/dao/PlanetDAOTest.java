@@ -42,6 +42,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.junit.experimental.runners.Enclosed;
 
 
 import static org.junit.Assert.assertEquals;
@@ -57,55 +58,26 @@ import org.bson.Document;
 //@RunWith(SpringJUnit4ClassRunner.class)
 //@ContextConfiguration(classes = {SpringMongoConfiguration.class})
 
-@RunWith(Parameterized.class)
+//@RunWith(Enclosed.class)
 public class PlanetDAOTest {
-	
-	//@Parameterized.Parameter(0)
-    public String idOrNameToTest;
-    //@Parameterized.Parameter(1)
-    public Planet expectedPlanet;
-
-	 
- // creates the test data
-    enum Type {ALLPLANETS,GETID,GETNAME,INSERT,UPDATE,DELETE};
-    @Parameters
-    public static Collection<Object[]> data() {
-    	return Arrays.asList(new Object[][]{{Type.ALLPLANETS,null,null},{Type.GETID,"01", new Planet("01","Tatooine","arid","desert") },
-    		{Type.GETID,"InexistentID", null }, {Type.GETID,"03", new Planet("03","Yavin IV","temperate, tropical","jungle, rainforests")},
-    		{Type.GETNAME,"Tatooine", new Planet("01","Tatooine","arid","desert") },
-    		{Type.GETNAME,"InexistentName", null }, {Type.GETNAME,"Yavin IV", new Planet("03","Yavin IV","temperate, tropical","jungle, rainforests")},
-    		{Type.INSERT,null,null},
-    		{Type.UPDATE,null,null},
-    		{Type.DELETE,null,null}});
-    }
-
 	
 	@Mock
 	private MongoClient mockClient;
 	@Mock
 	private MongoDatabase _mockDB;
 	
-	private Type type;
-
+	protected static MongoCollection<Document> planets;
 	
-	protected MongoCollection<Document> planets;
 	
 	private static final String CONNECTION_STRING = "mongodb://%s:%d";
 	  protected MongodExecutable _mongodExe;
-	  protected MongodProcess _mongod;
-	  protected int port=27018;  
-	  protected String ip = "localhost";
+	  protected static MongodProcess _mongod;
+	  protected static int port=27018;  
+	  protected static String ip = "localhost";
     
-	 public PlanetDAOTest(Type type, String idOrNameToTest, Planet expectedPlanet) {
-		 this.type=type;
-		 this.idOrNameToTest=idOrNameToTest;
-		 this.expectedPlanet=expectedPlanet;
-	 }
-
 	  
-	  
-	  @Before
-	  public void setUp() throws Exception {
+	  //@Before
+	  public static void setUp() throws Exception {
 		  MongodExecutable _mongodExe;
 
 		  
@@ -114,7 +86,7 @@ public class PlanetDAOTest {
 			MongoCollection<Document> col = null;
 
 
-			//int port = Network.getFreeServerPort();
+			int port = Network.getFreeServerPort();
 			ImmutableMongodConfig mongodConfig = MongodConfig.builder()
 			    .version(Version.Main.PRODUCTION)
 			    .net(new Net(port, Network.localhostIsIPv6()))
@@ -140,32 +112,10 @@ public class PlanetDAOTest {
 	  }
 	  
 
-	  @After
-	  public void tearDown() throws Exception {
+	  //@After
+	  public static void tearDown() throws Exception {
 	    _mongod.stop();
 	  }
-
-	
-	
-	public void printDB(MongoCollection<Document> collection) {
-		System.out.println(collection.count());
-		 MongoCursor<Document> cursor = collection.find().iterator();
-
-	        try {
-	            while (cursor.hasNext()) {
-	                Document doc = cursor.next();
-	                System.out.println(
-	                    "In the " + doc.get("id") + ", " + doc.get("name") + 
-	                    " by " + doc.get("climate") + " topped the charts for " + 
-	                    doc.get("terrain") + " straight weeks."
-	                );
-	            }
-	        } finally {
-	            cursor.close();
-	        }
-	        
-	        
-	}
 
 
 	public static List<Document> dataListDocuments(){
@@ -208,87 +158,198 @@ public class PlanetDAOTest {
 		
 	}
 	
-	@Test
-	public void testListAll() throws Exception {
-		
-		//Given
-		Assume.assumeTrue(type == Type.ALLPLANETS);
-		PlanetDAO dao = new PlanetDAO("test",planets);
-		ArrayList<Planet> listPlanets = new ArrayList<Planet>();
-		ArrayList<Planet> listPlanetsTestData = new ArrayList<Planet>();
-		listPlanetsTestData=dataArrayListPlanets();
-				
-		//Then
-		listPlanets = dao.listAll();	
-		
-		//When
-		assertEquals(listPlanets,listPlanetsTestData);	
-		
-		
-		
-	}
-	
-	
-	@Test
-	public void getByIdTest() {
-		//Given
-		Assume.assumeTrue(type == Type.GETID);
-		PlanetDAO dao = new PlanetDAO("test",planets);
-		Planet planet = null;
-		//Then
-		planet = dao.getById(idOrNameToTest);
-		//When
-		assertEquals(planet,expectedPlanet);		
-	}
-	
-	@Test
-	public void getByNameTest() {
-		//Given
-		Assume.assumeTrue(type == Type.GETNAME);
-		PlanetDAO dao = new PlanetDAO("test",planets);
-		Planet planet = null;
-		//Then
-		planet = dao.getByName(idOrNameToTest);
-		//When
+	public static void printDB(MongoCollection<Document> collection) {
+    	System.out.println(collection.count());
+    	MongoCursor<Document> cursor = collection.find().iterator();
 
-		assertEquals(planet,expectedPlanet);		
-	}
+        try {
+            while (cursor.hasNext()) {
+                Document doc = cursor.next();
+                System.out.println(
+                    "In the " + doc.get("id") + ", " + doc.get("name") + 
+                    " by " + doc.get("climate") + " topped the charts for " + 
+                    doc.get("terrain") + " straight weeks."
+                );
+            }
+        } finally {
+            cursor.close();
+        } 
+        
+    }
 	
-	@Test
-	public void insertTest() {
-		//Given
-		Assume.assumeTrue(type == Type.INSERT);
-		PlanetDAO dao = new PlanetDAO("test",planets);
-		Planet planet = new Planet("04","Bespin","temperate","gas giant");
-		boolean result;
-		//Then
-		result = dao.insert(planet);
-		//When
-		assertEquals(result,true);		
-	}
+	//@RunWith(Parameterized.class)
+    public static class ListAll {		    
+        @Test
+    	public void testListAll() throws Exception {		
+    		//Given
+        	setUp();
+    		PlanetDAO dao = new PlanetDAO("test",planets);
+    		ArrayList<Planet> listPlanets = new ArrayList<Planet>();
+    		ArrayList<Planet> listPlanetsTestData = new ArrayList<Planet>();
+    		listPlanetsTestData=dataArrayListPlanets();
+    				
+    		//Then
+    		listPlanets = dao.listAll();	
+    		
+    		//When
+    		assertEquals(listPlanets,listPlanetsTestData);
+    		tearDown();
+    	}
+  }
+    @RunWith(Parameterized.class)
+    public static class getById {		    
+
+	    @Parameterized.Parameters
+        public static Object[][] data() {
+            return new Object[][]{{"01",new Planet("01","Tatooine","arid","desert") },
+            		{"InexistentID", null}, {"03", new Planet("03","Yavin IV","temperate, tropical","jungle, rainforests")}            	
+            };
+        }
+
+        @Parameterized.Parameter(0)
+        public String idToTest;
+        @Parameterized.Parameter(1)
+        public Planet expectedPlanet;
+	    
+
+        @Test
+    	public void getByIdTest() throws Exception {
+    		//Given
+        	setUp();
+    		PlanetDAO dao = new PlanetDAO("test",planets);
+    		Planet planet = null;
+    		//Then
+    		planet = dao.getById(idToTest);
+    		//When
+    		assertEquals(planet,expectedPlanet);
+    		tearDown();
+    	}
+  }
+    
+    @RunWith(Parameterized.class)
+    public static class GetByName {		    
+
+	    @Parameterized.Parameters
+        public static Object[][] data() {
+            return new Object[][]{{"Tatooine", new Planet("01","Tatooine","arid","desert")},
+        		{"InexistentName", null }, {"Yavin IV", new Planet("03","Yavin IV","temperate, tropical","jungle, rainforests")}           	
+            };
+        }
+
+        @Parameterized.Parameter(0)
+        public String nameToTest;
+        @Parameterized.Parameter(1)
+        public Planet expectedPlanet;
+	    
+
+        @Test
+    	public void getByNameTest() throws Exception {
+    		//Given
+        	setUp();
+    		PlanetDAO dao = new PlanetDAO("test",planets);
+    		Planet planet = null;
+    		//Then
+    		planet = dao.getByName(nameToTest);
+    		//When
+    		assertEquals(expectedPlanet,planet);
+    		tearDown();
+    	}
+  }
+    
+    @RunWith(Parameterized.class)
+    public static class Insert {		    
+
+    	@Parameterized.Parameters
+        public static Object[][] data() {
+            return new Object[][]{{new Planet("04","Bespin","temperate","gas giant"),true},
+            	{new Planet(null,null,"temperate","gas giant"),false},
+            	{new Planet(null,"Bespin","temperate","gas giant"),false},
+            	{new Planet("04",null,"temperate","gas giant"),false},
+            	{new Planet(null,null,null,null),false}
+            };
+        }
+
+        @Parameterized.Parameter(0)
+        public Planet planet;
+        @Parameterized.Parameter(1)
+        public boolean expectedResult;
+	    
+
+        @Test
+    	public void insertTest() throws Exception {
+    		//Given
+        	setUp();
+        	PlanetDAO dao = new PlanetDAO("test",planets);
+    		//Then
+        	boolean result = dao.insert(planet);
+    		//When
+    		assertEquals(expectedResult,result);	
+    		tearDown();
+    	}
+  }
+    
+    @RunWith(Parameterized.class)
+    public static class Update {		    
+
+	    @Parameterized.Parameters
+        public static Object[][] data() {
+            return new Object[][]{{new Planet("03","Yavin IV","updated climate","updated terrain"),true},
+            {new Planet(null,"Yavin IV","updated climate","updated terrain"),false},
+            {new Planet("03",null,"updated climate","updated terrain"),false},
+	    	{new Planet("03",null,null,"updated terrain"),false},
+    		{new Planet(null,null,null,null),false}        	
+            };
+        }
+
+	    @Parameterized.Parameter(0)
+        public Planet planet;
+        @Parameterized.Parameter(1)
+        public boolean expectedResult;
+	    
+
+        @Test
+    	public void updateTest() throws Exception {
+    		//Given
+        	setUp();
+        	PlanetDAO dao = new PlanetDAO("test",planets);
+    		//Then
+    		boolean result = dao.insert(planet);
+    		//When
+    		assertEquals(expectedResult,result);		
+    		tearDown();
+    	}
+  }
+    
+    @RunWith(Parameterized.class)
+    public static class Delete {		    
+
+	    @Parameterized.Parameters
+        public static Object[][] data() {
+            return new Object[][]{{"01",true}        	
+            };
+        }
+
+        @Parameterized.Parameter(0)
+        public String idToDelete;
+        @Parameterized.Parameter(1)
+        public boolean result;
+	    
+
+        @Test
+    	public void deleteTest() throws Exception {
+    		//Given
+        	setUp();
+        	PlanetDAO dao = new PlanetDAO("test",planets);
+    		//Then
+    		result = dao.delete(idToDelete);
+    		//When
+    		assertEquals(true,result);	
+    		tearDown();
+    	}
+  }
+
+    
 	
-	public void updateTest() {
-		//Given
-		Assume.assumeTrue(type == Type.UPDATE);
-		PlanetDAO dao = new PlanetDAO("test",planets);
-		Planet planet = new Planet("03","Yavin IV","updated climate","updated terrain");
-		boolean result;
-		//Then
-		result = dao.insert(planet);
-		//When
-		assertEquals(result,true);			
-	}
-	
-	public void deleteTest() {
-		//Given
-		Assume.assumeTrue(type == Type.DELETE);
-		PlanetDAO dao = new PlanetDAO("test",planets);
-		boolean result;
-		//Then
-		result = dao.delete("01");
-		//When
-		assertEquals(result,true);		
-	}
 
 }
 

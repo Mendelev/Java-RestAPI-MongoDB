@@ -51,10 +51,10 @@ public class ClienteResource {
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response salvarClienteJson(Planet cliente) {
-		boolean isClienteGravado = new PlanetController().savePlanet(cliente);
+	public Response salvarClienteJson(Planet planet) {
+		boolean isClienteGravado = new PlanetController().savePlanet(planet);
 		if (isClienteGravado == true) {
-			return Response.ok().entity(cliente).build();
+			return Response.ok().entity(planet).build();
 		} else {
 			return Response.status(500).entity("Error to save planet").build();
 		}

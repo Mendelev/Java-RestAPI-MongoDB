@@ -36,7 +36,7 @@ public class PlanetController {
 	}
 
 	/**
-	 * Chama o metodo inset da classe PlanetDAO
+	 * Call method insert on PlanetDAO class
 	 */
 	public boolean savePlanet(Planet planet) {
 		System.out.println("Controller: gravarCliente " + planet.getName());
