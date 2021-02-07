@@ -13,7 +13,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.json.simple.JSONObject;
+
+import com.mongodb.MongoException;
+
 import br.com.restful.controller.PlanetController;
+import br.com.restful.filebeat.Logger;
 import br.com.restful.model.Planet;
 
 
@@ -26,20 +31,55 @@ public class ClienteResource {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public ArrayList<Planet> listAll() {
+		Logger log = new Logger();
+		ArrayList<Planet> listPlanets = new ArrayList<Planet>();
 		System.out.println("ArrayList de planetas");
-		PlanetController teste = new PlanetController();
-		System.out.println(teste.listAll());
-		return teste.listAll();
+		PlanetController controller = new PlanetController();
+		System.out.println(controller.listAll());
+		try {
+			listPlanets = controller.listAll();
+			log.writeLogEvent("E61", "INFORMATION", "All planets successful listed");
+			}catch(Exception e) {
+				JSONObject json = new JSONObject();
+				json.put("message ", "Unable to list planets");
+				json.put("Exception ", e);
+				log.writeLogEvent("E31", "ERROR", json.toString().replaceAll("\"", ""));
+				e.printStackTrace();
+		}
+		return listPlanets;
 	}
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{idOrName}")
 	public Response getById(@PathParam("idOrName") String idOrName) {
+		Logger log = new Logger();
 		System.out.println("Calling getByid");
-		Planet planet = new PlanetController().searchById(idOrName);
+		Planet planet = null;
+		//Try get planet by id
+		try {
+			planet = new PlanetController().searchById(idOrName);
+			log.writeLogEvent("E62", "INFORMATION", "The planet of ID "+ idOrName + " has been found");
+		} catch(NullPointerException e) {
+			JSONObject json = new JSONObject();
+			json.put("message ", "An Exception has been throwed when trying to get a planet with ID: "+ idOrName);
+			json.put("Exception ", e);
+			log.writeLogEvent("E32", "ERROR", json.toString().replaceAll("\"", ""));
+			e.printStackTrace();
+		}
+		//If planet still null, try get planet by name
 		if (planet == null) {
-			 planet = new PlanetController().searchByName(idOrName);
+			try {
+				planet = new PlanetController().searchByName(idOrName);
+				log.writeLogEvent("E63", "INFORMATION", "The planet of name "+ idOrName + " has been found");
+			}catch(NullPointerException e) {
+				JSONObject json = new JSONObject();
+				json.put("message ", "An Exception has been throwed when trying to get a planet with ID: "+ idOrName);
+				json.put("Exception ", e);
+				log.writeLogEvent("E33", "ERROR", json.toString().replaceAll("\"", ""));
+				e.printStackTrace();
+			}
+			 
 		}
 		if (planet != null) {
 			return Response.ok().type(MediaType.APPLICATION_JSON).entity(planet).build();
@@ -52,8 +92,19 @@ public class ClienteResource {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response salvarClienteJson(Planet planet) {
-		boolean isClienteGravado = new PlanetController().savePlanet(planet);
-		if (isClienteGravado == true) {
+		boolean isPlanetSaved = false;
+		Logger log = new Logger();
+		try{
+			isPlanetSaved = new PlanetController().savePlanet(planet);
+			log.writeLogEvent("E64", "INFORMATION", "The planet " + planet.toString() +  " has been successful inserted");
+		} catch(MongoException e){
+			JSONObject json = new JSONObject();
+			json.put("message ", "Unable to insert the planet " + planet.toString() +  " on MongoDB ");
+			json.put("Exception ", e);
+			log.writeLogEvent("E34", "ERROR", json.toString().replaceAll("\"", ""));
+			e.printStackTrace();
+		}
+		if (isPlanetSaved == true) {
 			return Response.ok().entity(planet).build();
 		} else {
 			return Response.status(500).entity("Error to save planet").build();
@@ -64,10 +115,21 @@ public class ClienteResource {
 	@PUT
 	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response updatePlanet(Planet cliente) {
-		boolean isClienteAtualizado = new PlanetController().updatePlanet(cliente);
-		if (isClienteAtualizado == true) {
-			return Response.ok().entity(cliente).build();
+	public Response updatePlanet(Planet planet) {
+		Logger log = new Logger();
+		boolean isPlanetUpdated = false;
+		try{
+			isPlanetUpdated = new PlanetController().updatePlanet(planet);
+			log.writeLogEvent("E65", "INFORMATION", "The planet " + planet.toString() +  " has been successful inserted");
+		}catch(MongoException e) {
+			JSONObject json = new JSONObject();
+			json.put("message ", "Unable to update the planet " + planet.toString() +  " on MongoDB ");
+			json.put("Exception ", e);
+			log.writeLogEvent("E35", "ERROR", json.toString().replaceAll("\"", ""));
+			e.printStackTrace();
+		}
+		if (isPlanetUpdated == true) {
+			return Response.ok().entity(planet).build();
 		} else {
 			return Response.status(500).entity("Error to update planet").build();
 		}
@@ -78,9 +140,20 @@ public class ClienteResource {
 	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response deletePlanet(@PathParam("id") String id) {
+		Logger log = new Logger();
 		System.out.println("Calling delete method");
-		boolean isClienteDeletado = new PlanetController().deletePlanet(id);
-		if (isClienteDeletado == true) {
+		boolean isPlanetDeleted = false;
+		try{
+			isPlanetDeleted = new PlanetController().deletePlanet(id);
+			log.writeLogEvent("E66", "INFORMATION", "The planet with ID: " + id +  " has been successful deleted");
+		} catch(MongoException e) {
+			JSONObject json = new JSONObject();
+			json.put("message ", "Unable to update the plane with ID: " + id +  "on MongoDB ");
+			json.put("Exception ", e);
+			log.writeLogEvent("E66", "ERROR", json.toString().replaceAll("\"", ""));
+			e.printStackTrace();
+		}
+		if (isPlanetDeleted == true) {
 			System.out.println("Planet with id " + id + " deleted");
 			return Response.ok().entity(id).build();
 		} else {

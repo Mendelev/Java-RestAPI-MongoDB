@@ -22,12 +22,14 @@ import org.bson.types.ObjectId;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 //import org.json.JSONObject;
+import org.json.simple.JSONObject;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Updates.*;
 
 import br.com.restful.factory.ConnectionFactory;
 import br.com.restful.factory.SWAPIConnectionFactory;
+import br.com.restful.filebeat.Logger;
 import br.com.restful.model.Planet;
 
 /**
@@ -58,30 +60,39 @@ import br.com.restful.model.Planet;
 	public void calculateFilmsFromPlanet(Planet planet) throws JSONException {
 		SWAPIConnectionFactory connection = new SWAPIConnectionFactory();		
 		JsonObject jsonObject = new JsonObject();
-		
-		try {
-			jsonObject = connection.getBuilder("planets/",null);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return;
-		}
-		JsonElement obj2=null;
-		JsonObject obj3=null;
-		
-		JsonArray arr1 = jsonObject.getAsJsonArray("results");
-		for(int i=0; i<arr1.size(); i++) {
-			obj2 = arr1.get(i);
-			obj3 = obj2.getAsJsonObject();
-			
-			if(obj3.get("name").getAsString().equals(planet.getName())) {
-				break;
+		int maxPage=6;
+		Integer count=1;
+		boolean nextPage=true;
+		while(nextPage) {
+			try {
+				jsonObject = connection.getBuilder("planets/",count.toString());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return;
 			}
+			JsonElement obj2=null;
+			JsonObject obj3=null;
+			
+			JsonArray arr1 = jsonObject.getAsJsonArray("results");
+			for(int i=0; i<arr1.size(); i++) {
+				obj2 = arr1.get(i);
+				obj3 = obj2.getAsJsonObject();
+				
+				if(obj3.get("name").getAsString().equals(planet.getName())) {
+					nextPage=false;
+					break;
+				}
+			}
+			
+			if(nextPage && count<maxPage) {
+				count++;
+			}
+			else {
+				JsonArray arr = obj3.getAsJsonArray("films");				
+				planet.setAmountFilms(arr.size());	
+			}		
 		}
-		
-		JsonArray arr = obj3.getAsJsonArray("films");
-		
-		planet.setAmountFilms(arr.size());		
 	}
 
 	//List all planets on mongoDB
@@ -110,11 +121,12 @@ import br.com.restful.model.Planet;
 	                	calculateFilmsFromPlanet(planet);
 	                }
 	                
-	                listPlanets.add(planet);
+	                listPlanets.add(planet);                
 	                
 	            }
 	        } catch (Exception e) {
 				System.out.println("Error when listing planets: " + e);
+				
 				e.printStackTrace();
 	        }
 			finally {

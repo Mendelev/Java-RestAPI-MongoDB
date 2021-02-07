@@ -75,12 +75,12 @@ public class SWAPIConnectionFactory {
 		 
 	}
 	
-	public JsonObject getBuilder(String path, String searchquery) throws Exception {		
+	public JsonObject getBuilder(String path, String pageNumber) throws Exception {		
 		HttpGet httpGet;
-        if (searchquery == null) {
+        if (pageNumber == null) {
             httpGet = new HttpGet("https://swapi.dev/api/" + path + "/");
         } else {
-            httpGet = new HttpGet("https://swapi.dev/api/" + path + "/?search=" + searchquery);
+            httpGet = new HttpGet("https://swapi.dev/api/" + path + "/?page=" + pageNumber);
         }
         return this.getRequest(httpGet);
     }
