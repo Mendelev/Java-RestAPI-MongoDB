@@ -58,7 +58,7 @@ Com o filebeat enviando os eventos e a aplicação rodando, acesse o kibana no b
 Guia ->https://www.elastic.co/guide/en/kibana/6.8/tutorial-define-index.html
 
 Assim a aplicação enviará os eventos conforme abaixo
-![alt text](https://imgur.com/8M77NwF)
+https://imgur.com/8M77NwF
 
 #### 4- abra o eclipse, vá até 
 File> Import> GIT> Projects from Git> Next>
