@@ -42,7 +42,7 @@ Crie um usuário
 #### 3 - Integração com ELK
 A aplicação gera eventos no ELK para monitoração a partir do filebeat, para permitir que os logs sejam capturados pelo ELK, crie uma pasta chamada logs em C:\ ou altere o path na classe logger para a pasta em que se deseja ter os logs gerados.
 
-Caso não haja um cluster ELK de pé, no CMD (Terminal) acesse a pasta ELK do projeto e rode os comandos:
+Caso não haja um cluster ELK de pé, no CMD (Terminal) acesse a pasta ELK do projeto e rode os comandos (recomendo colocar o ELK de pé no Linux Ubuntu):
 >docker-compose up -d
 
 Se o ELK for levantado no Linux, rode também o comando.
