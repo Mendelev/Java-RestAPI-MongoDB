@@ -1,0 +1,32 @@
+# This file SHALL have the following configs:
+# chown root /usr/share/filebeat/filebeat.yml
+# chmod go-w /usr/share/filebeat/filebeat.yml
+
+filebeat.config.modules:
+  enabled: true
+  path: ${path.config}\modules.d\*.yml
+
+filebeat.modules:
+- module: system
+  syslog:
+    enabled: false
+    var.paths: ["C:\\logs\\*"]
+  auth:
+    enabled: false
+
+filebeat.inputs:
+- type: log
+  paths:
+    - C:\logs\*.log
+  json.keys_under_root: true
+
+processors:
+  - decode_json_fields:
+      fields: ["event_id"]  
+      max_depth: 3
+
+output.elasticsearch:
+  hosts: ["192.168.0.18:9200"]
+
+setup.kibana:
+  host: "192.168.0.18:5601"

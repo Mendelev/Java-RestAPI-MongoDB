@@ -38,9 +38,29 @@ Crie um usuário
         { role: 'readWrite', db: 'test' }
     ]
 })
-```
 
-#### 3- abra o eclipse, vá até 
+#### 3 - Integração com ELK
+A aplicação gera eventos no ELK para monitoração a partir do filebeat, para permitir que os logs sejam capturados pelo ELK, crie uma pasta chamada logs em C:\ ou altere o path na classe logger para a pasta em que se deseja ter os logs gerados.
+
+Caso não haja um cluster ELK de pé, no CMD (Terminal) acesse a pasta ELK do projeto e rode os comandos:
+>docker-compose up -d
+
+Se o ELK for levantado no Linux, rode também o comando.
+>sysctl -w vm.max_map_count=262144
+
+Assim um conjunto ELK de único nó será estabelecido na máquina alvo.
+
+Com um cluster ELK estabelecido para coletar os eventos da aplicação, acesse a pasta filebeat e edite o arquivo filebeat.yml para que os IPs correspondam aos IPs do cluster ELK. Após editar, abra o CMD (Terminal) e rode o comando:
+
+>.\filebeat.exe -c .\filebeat.yml -e
+
+Com o filebeat enviando os eventos e a aplicação rodando, acesse o kibana no browser pelo IP:5601 e defina um index pattern com filebeat*
+Guia ->https://www.elastic.co/guide/en/kibana/6.8/tutorial-define-index.html
+
+Assim a aplicação enviará os eventos conforme abaixo
+![alt text](https://imgur.com/8M77NwF)
+
+#### 4- abra o eclipse, vá até 
 File> Import> GIT> Projects from Git> Next>
 
 Clone URI> Next>
@@ -59,14 +79,14 @@ Next> Next >Fisish
 
 >selecione o diretorio onde sera instalado o Servidor Tomcat.
 
-### 4- rode o projeto
+### 5- rode o projeto
 >clique com o botao direito dp mouse sobre o projeto e vá até,
 
 Run as> Run on server>
 
 >selecione o servidor Tomcat criado no passo 1, e clique em 'Finish', depois abra o navegador em http://localhost:8080/rest-api/
 
-### 5 - criar, listar e deletar clientes
+### 6 - criar, listar e deletar clientes
 >recomendo usar o [Postman](https://www.getpostman.com "postman") para testar essa api.
 #### CRUD
 
@@ -125,8 +145,10 @@ method -  uri
 DELETE - http://localhost:8080/rest-api/{id}
 
 
-#### 6- Testes Unitários
+#### 7- Testes Unitários
 Os testes unitários foram produzidos para os métodos no PlanetDao, para rodá-los, clique com o botão direito no projeto -> Run As -> Junit Test.
 
 Os testes foram feitos usando um Fake MongoDB, de modo que para rodá-los não depende de conexão com o servidor MongoDB
+
+
 
