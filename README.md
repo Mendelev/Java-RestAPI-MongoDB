@@ -57,8 +57,10 @@ Com um cluster ELK estabelecido para coletar os eventos da aplicação, acesse a
 Com o filebeat enviando os eventos e a aplicação rodando, acesse o kibana no browser pelo IP:5601 e defina um index pattern com filebeat*
 Guia ->https://www.elastic.co/guide/en/kibana/6.8/tutorial-define-index.html
 
-Assim a aplicação enviará os eventos conforme abaixo
-https://imgur.com/8M77NwF
+Assim a aplicação enviará os eventos conforme a imagem abaixo
+
+
+https://i.imgur.com/8M77NwF.png
 
 #### 4- abra o eclipse, vá até 
 File> Import> GIT> Projects from Git> Next>
